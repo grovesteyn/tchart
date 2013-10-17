@@ -90,7 +90,8 @@ class TaskReport(object):
         tasks = due_list
 
         try:
-            tasks.sort(key=itemgetter('due', 'project'))
+            # Group by date and then by project
+            tasks.sort(key=itemgetter('due', 'project')) 
         except KeyError:  # If no 'project' attribute for one or more tasks
             tasks.sort(key=itemgetter('due'))
             print "Warning: Some tasks do not have a project assigned."
@@ -244,6 +245,7 @@ class TaskReport(object):
                 datetime.min.time())  # Converts the date back to a datetime.
 
         else:
+                # This assumes GMT+2 - change this for your timezone                
             tdate = datetime.strptime(task["due"], "%Y%m%dT%H%M%SZ") + \
                 timedelta(hours=2)  # Assume tasks are ordered by due date
         daydiff = tdate.date() - self.weekstart
