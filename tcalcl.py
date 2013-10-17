@@ -68,17 +68,6 @@ class TaskReport(object):
         self.selector = args.select
         print self.consoleline
         print
-# Old function
-#        if (len(sys.argv) == 2 and sys.argv[1] != '-s') or (len(sys.argv) > 2):  # If a specific filter has been specified at the console (with or without a '-s' switch)
-#            consoleline = (' '.join(sys.argv[2:])) if sys.argv[
-#                1] != '-s' else (' '.join(sys.argv[1:]))
-#            consoleline = (consoleline + ' status:pending') if consoleline.find(
-#                'status:pending') < 0 else consoleline
-#            consoleline = (consoleline + ' export') if consoleline.find(
-#                'export') < 0 else consoleline
-#            self.consoleline = 'task ' + consoleline
-#        else:
-#            self.consoleline = 'task due.before:' + str(self.cutoffdate).replace('-', '/') + ' status:pending export'  # Change the date format to match that required by Taskwarrior
 
     def load_tasks(self):
         """
