@@ -53,19 +53,17 @@ class TaskReport(object):
 #            print "select tasks"
         if args.filter:
             self.consoleline = " ".join(args.filter)
-            self.consoleline = (self.consoleline + ' status:pending') if \
-                self.consoleline.find('status:pending') < 0 else \
-                self.consoleline
-            self.consoleline = (self.consoleline + ' export') if \
-                self.consoleline.find('export') < 0 else self.consoleline
+            self.consoleline = (self.consoleline + ' status:pending') \
+                if self.consoleline.find('status:pending') < 0 \
+                else self.consoleline
+            self.consoleline = (self.consoleline + ' export') \
+                if self.consoleline.find('export') < 0 \
+                else self.consoleline
             self.consoleline = 'task ' + self.consoleline
         else:
-            #  When no arguments were given
-            # Change the date format to match that required by Taskwarrior
-            self.consoleline = 'task due.before:' + \
-                str(self.cutoffdate).replace('-', '/') + ' status:pending ' + \
-                'due.any: export'
-        #  Indicates whether task selector was requested.  Either True or None
+            # When no arguments are given.
+            self.consoleline = 'task due.any: status:pending export'
+        # Indicates whether task selector was requested.  Either True or None
         self.selector = args.select
         print self.consoleline
         print
@@ -92,7 +90,7 @@ class TaskReport(object):
 
         try:
             # Group by date and then by project
-            tasks.sort(key=itemgetter('due', 'project')) 
+            tasks.sort(key=itemgetter('due', 'project'))
         except KeyError:  # If no 'project' attribute for one or more tasks
             tasks.sort(key=itemgetter('due'))
             print "Warning: Some tasks do not have a project assigned."
@@ -153,7 +151,7 @@ class TaskReport(object):
     def run_selector(self):
         """
         Compile and run the task selector.
-        
+
         See: http://www.wanware.com/tsgdocs/snack.html for info on the
         python snack module.
         Also look at the code in snack.py to understand what it is doing.
@@ -246,7 +244,7 @@ class TaskReport(object):
                 datetime.min.time())  # Converts the date back to a datetime.
 
         else:
-                # This assumes GMT+2 - change this for your timezone                
+                # This assumes GMT+2 - change this for your timezone
             tdate = datetime.strptime(task["due"], "%Y%m%dT%H%M%SZ") + \
                 timedelta(hours=2)  # Assume tasks are ordered by due date
         daydiff = tdate.date() - self.weekstart
