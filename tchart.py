@@ -60,10 +60,11 @@ class TaskReport(object):
                 self.consoleline.find('export') < 0 else self.consoleline
             self.consoleline = 'task ' + self.consoleline
         else:
+            #  When no arguments were given
             # Change the date format to match that required by Taskwarrior
             self.consoleline = 'task due.before:' + \
                 str(self.cutoffdate).replace('-', '/') + ' status:pending ' + \
-                '-erma export'
+                'due.any: export'
         #  Indicates whether task selector was requested.  Either True or None
         self.selector = args.select
         print self.consoleline
