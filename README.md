@@ -68,4 +68,4 @@ Mode of use
 
 I generally find that I use tchart in combination with the normal Taskwarrior commands.  I have also setup autocompletion to work with task, and with tchart, which futher increases its power.
 
-Being an amateur programmer I would welcome contributions and improvements.
+Being an amateur programmer I would welcome contributions and improvements, and especially pull requests :-)) .
