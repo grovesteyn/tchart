@@ -56,10 +56,10 @@ Listbox task selection and modification
 
 The listbox selection tool allows rapid updates of the task list (by using the -s switch).  Onscreen buttons, or hotkeys allow rapid changes to selected tasks' due dates; marking tasks as complete; or an easy way to completing the Taskwarrior commandline for the selected tasks.
 
-Tasks are selected with the spacebar.  If no selection is made the task under the cursor is used.
-Keys 1 - 7 sets the due date 1 - 7 days into the future (e.g. key '2' executes 'task 22 mod due:2')
-0 sets the due date to today
-d marks tasks as 'done'
+- Tasks are selected with the spacebar.  If no selection is made the task under the cursor is used.
+- Keys 1 - 7 sets the due date 1 - 7 days into the future (e.g. key '2' executes 'task 22 mod due:2')
+- 0 sets the due date to today
+- d marks tasks as 'done'
 
 Pressing any hotkey or hitting Enter after selecting (a) task/s moves to the next screen.  Tchart compiles the appropriate TW commandline and displays it for approval or modification (press Enter twice to execute the line).
 
