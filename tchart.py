@@ -157,8 +157,9 @@ class TaskReport(object):
         Also look at the code in snack.py to understand what it is doing.
         """
         wdays_short = "M  T  W  T  F  S  S  "
-
-        extrahkeysdict = {'1': ' mod due:1d',
+        
+        extrahkeysdict = {'0': ' mod due:today',
+                          '1': ' mod due:1d',
                           '2': ' mod due:2d',
                           '3': ' mod due:3d',
                           '4': ' mod due:4d',
@@ -167,8 +168,9 @@ class TaskReport(object):
                           '7': ' mod due:7d',
                           '8': ' mod due:1w',
                           '9': ' mod due:2w',
-                          '0': ' mod due:today',
-                          'd': ' done'}
+                          'd': ' done',
+                          'i': ' info',
+                          'h': ' HELP'}
 
         for key in extrahkeysdict.keys():
             snack.hotkeys[key] = ord(key)  # Add to the snack hkey library
@@ -194,41 +196,64 @@ class TaskReport(object):
         grid.addHotKey('ESC')
         for key in extrahkeysdict.keys():
             grid.addHotKey(key)
-        result = grid.runOnce()
-        buttonpressed = mybuttonbar.buttonPressed(result)
-        selection = lbox.getSelection()
-
+        result = grid.runOnce()  # This is the key of the HotKey dict
+        buttonpressed = mybuttonbar.buttonPressed(result)  # The Hotkey dict \
+            # value of key in 'result'.  Returns None if no hotkey or button \
+            # pressed
+        selection = lbox.getSelection()  # This is a list
+        
+        # The first set of if options deals with all the exceptions while \
+        # the last 'else' deals with actual task manupulations.        
         if result == 'ESC':
             screen.finish()
             return (None, True)
-
-        # Get the selected or current task/s from the listbox
-        if len(selection) > 0:
-            # Joins the selections into comma seperated list, and suppresses
-            # confirmation for this number of tasks
-            basictaskstr = 'task ' + ','.join(map(repr, lbox.getSelection())) \
-                + ' rc.bulk:' + str(len(lbox.getSelection()) + 1)
-        else:  # If no selections have been made use the current task
-            basictaskstr = basictaskstr = 'task ' + str(lbox.current())
-
-        # Figure out what commands to add, if any given
-        if buttonpressed:
-            basictaskstr = basictaskstr + ' mod due:' + buttonpressed
-        elif result in extrahkeysdict: # If a hotkey not linked to button.
-            basictaskstr = basictaskstr + extrahkeysdict[result]
-        else:  # Else type in the reset of the command.
-            basictaskstr = basictaskstr + ' mod '
-
-        result = snack.EntryWindow(screen, "Enter command details...", \
-            "", [('Command to be executed:', basictaskstr)], width=50, \
-            entryWidth=30, buttons=[('OK', 'OK', 'F1'), ('Cancel', 'Cancel',
-            'ESC')])  # Look at the code for this function to understand this
-        screen.finish()
-        if result[0] == 'Cancel':
-            return(None, True)
+        elif result == 'h':
+            mytext = ''
+            for mykey in sorted(extrahkeysdict):
+                mytext = mytext + '\n' + mykey + ': ' + extrahkeysdict[mykey]
+            snack.ButtonChoiceWindow(screen, 'Help', mytext, ['Ok'])
+            screen.finish()
+            return (None, False)
+        elif result == 'i':
+            basictaskstr = 'task ' + str(lbox.current()) + ' info'
+            mytext = commands.getoutput(basictaskstr)
+            snack.ButtonChoiceWindow(screen, 'Task information', mytext, \
+                ['Ok'],width=80)
+            screen.finish()
+            return (None, False)
         else:
-            print '>' + result[1][0]
-            return (commands.getoutput(result[1][0]), False)
+            # Get the selected or current task/s from the listbox
+            if len(selection) > 0:
+                # Joins the selections into comma seperated list, and suppresses
+                # confirmation for this number of tasks
+                # basictaskstr = 'task ' + ','.join(map(repr, lbox.getSelection())) \
+                basictaskstr = 'task ' + ','.join(map(repr, selection)) \
+                    + ' rc.bulk:' + str(len(selection) + 1)
+            else:  # If no selections have been made use the current task
+                basictaskstr = 'task ' + str(lbox.current())
+    
+            # Figure out what commands to add, if any given
+            if buttonpressed:
+# TODO Change values in Buttonlist dict so that it provides the full command\
+#    so that it can be used in the same way as if any other hotkey was pressed
+                basictaskstr = basictaskstr + ' mod due:' + buttonpressed
+            elif result in extrahkeysdict:  # If a hotkey not linked to button.
+                basictaskstr = basictaskstr + extrahkeysdict[result]
+            else:  # Else type in the rest of the command.
+                basictaskstr = basictaskstr + ' mod '
+
+            result2 = snack.EntryWindow(screen, "Command details...", \
+                "", [('Command to be executed:', basictaskstr)], width=50, \
+                entryWidth=30, buttons=[('OK', 'OK', 'F1'), ('Cancel', 'Cancel',
+                'ESC')])  # Look at the code for this function to understand this
+            screen.finish()
+            if result2[0] == 'Cancel':
+                return(None, True)
+            else:
+                print '>' + result2[1][0]
+                return (commands.getoutput(result2[1][0]), False)
+
+
 
     def compile_taskline(self, task):
         """
