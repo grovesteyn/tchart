@@ -14,7 +14,6 @@ import time
 from subprocess import PIPE, Popen
 from blessings import Terminal  # sudo pip install blessings
 # On Ubuntu do: sudo apt-get install python-blessings
-# from IPython.core.debugger import Tracer
 import warnings
 warnings.filterwarnings("ignore")  # This is not the best practice, but a hack for now. Can refine to 
                                   #  only pick up the snack warning problem.
@@ -60,8 +59,6 @@ class TaskReport(object):
         parser.add_argument("-f", "--filter", nargs='+',
                             help='a string specifying the task filter')
         args = parser.parse_args()
-        #        if args.select:
-        #            print "select tasks"
         
         #  Check for Taskwarrior context and implement it
 
@@ -78,17 +75,12 @@ class TaskReport(object):
                 if (self.consoleline.find('status:') < 0
                     and self.consoleline.find('status.') < 0) \
                 else self.consoleline
-            # self.consoleline = (self.consoleline + ' due.any:') \
-            #     if (self.consoleline.find('due:') < 0
-            #         and self.consoleline.find('due.') < 0) \
-            #     else self.consoleline
             self.consoleline = self.consoleline + ' export' \
                 if self.consoleline.find('export') < 0 else self.consoleline
         else:
             # When no arguments are given.
             self.consoleline = self.consoleline + 'due.any: status:pending export'
-            # self.consoleline = self.consoleline + ' tags.not:adam and tags.not:leenesh and tags.not:alison'
-
+        
         self.consoleline = self.consoleline + ' rc.verbose:nothing'
             # rc.verbose:nothing to avoid any comments in output
         self.consoleline = "task " + self.consoleline
@@ -106,18 +98,9 @@ class TaskReport(object):
         """
         Load and sort the task list
         """
-        # subprocess.call(self.consoleline.split())  # This is the python way
         tstring = subprocess.getoutput(self.consoleline)
-        #cmdlist = list(self.consoleline.split(" "))
-        #tstring = subprocess.check_output(cmdlist) 
-        # with open("Output.txt", "w") as text_file:
-        #     text_file.write(tstring)  # Was used to debug problems with json output from task
-
-        # tstring = '[' + tstring + ']'  # Adds brackets to comply with Json
-        # tstring = tstring.replace('\n',',\n')
-        # print (repr(tstring))  # Show the newline characters, etc.
-        # print(tstring.splitlines()[21:23])
         tasks = json.loads(tstring)  # Ensure json.array=on in .taskrc
+        
         # This section removes the tasks with no due dates and adds them to the
         # front of the list after it has been sorted by due date and project
 
@@ -418,14 +401,7 @@ class TaskReport(object):
                       else task["description"]) \
                     + ' '
         
-        # taskline = indent * daydiff * " " + "(" \
-        #            + (task["project"] if "project" in task else "none") + ")" + " " \
-        #            + repr(task["id"]) + ("*" if "annotations" in task else " ") \
-        #            + (task["description"].upper()
-        #               if ("priority" in task and task["priority"] == "H")
-        #               else task["description"]) \
-        #            + (' [' + (', '.join(task["tags"]) + ']') if 'tags' in task else '') + ' '
-
+       
         if 'annotations' in task:
             for annotation in task['annotations']:
                 annline = "\n  " + indent * daydiff * " "
@@ -434,11 +410,6 @@ class TaskReport(object):
                 annline = annline + annotation['description']
                 taskline = taskline + annline
 
-
-        #        try:
-        #            taskline = taskline[0:self.width - 1]
-        #        except TypeError:
-        #            taskline = 80  # Remove the specification at __init__
 
         return taskline, tdate
 
@@ -449,20 +420,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-"""
-Done list
-
--   Numerous small fixes
--   Fixed time handling so that task due dates (especially the due day) are now
-    correctly reflected.  This fixed a problem where a project's tasks on a
-    specific were not always grouped together.
--   Fixed unicode error when using task selector (i.e. tchart -s)  This related
-    to a problem with how unicode text was passed to the C snack module
-    See: https://bugzilla.redhat.com/show_bug.cgi?id=689448
--   Added a -p switch that shows tasks sorted by project before due date.  This
-    can do with some display improvement.  Works best when limited to smaller
-    number of projects
--   Set the mast heading listing the weeks to screen width when doing a simple
-    screen print of the tasks (i.e. using tchart with no options)
-"""
