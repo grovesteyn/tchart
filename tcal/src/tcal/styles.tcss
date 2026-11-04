@@ -1,0 +1,106 @@
+/* ── Global ──────────────────────────────────────────────────────────────── */
+
+Screen {
+    background: $surface;
+    layers: base overlay;
+}
+
+/* ── Outer border frame ──────────────────────────────────────────────────── */
+
+Vertical#frame {
+    height: 1fr;
+    border: solid $primary;
+    padding: 0;
+}
+
+/* ── GANTT / status header ───────────────────────────────────────────────── */
+
+GanttHeader {
+    height: 6;
+    padding: 0 1;
+    background: $panel;
+    color: $text;
+    border-bottom: solid $primary;
+}
+
+/* ── Task list ───────────────────────────────────────────────────────────── */
+
+#task-list {
+    height: 1fr;
+    layer: base;
+    border: none;
+    background: $surface;
+}
+
+TaskListItem {
+    height: auto;
+    padding: 0 1;
+    background: $surface;
+}
+
+TaskListItem:focus-within {
+    background: $accent 20%;
+}
+
+TaskListItem.--highlight {
+    background: $accent 30%;
+}
+
+/* ── Shared modal container ──────────────────────────────────────────────── */
+
+#info-dialog,
+#modify-dialog,
+#confirm-dialog {
+    width: 84;
+    height: auto;
+    max-height: 40;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+    layer: overlay;
+    align: center middle;
+}
+
+/* ── Info modal ──────────────────────────────────────────────────────────── */
+
+#info-title {
+    text-style: bold;
+    padding-bottom: 1;
+    border-bottom: solid $primary-darken-2;
+}
+
+#info-body {
+    height: auto;
+    max-height: 30;
+    overflow-y: auto;
+    padding: 1 0;
+}
+
+/* ── Modify modal ────────────────────────────────────────────────────────── */
+
+#modify-dialog Label {
+    padding-bottom: 1;
+}
+
+#cmd-input {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+/* ── Confirm modal ───────────────────────────────────────────────────────── */
+
+#confirm-msg {
+    padding-bottom: 1;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+Button {
+    margin: 0 1;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+Footer {
+    background: $panel;
+}
