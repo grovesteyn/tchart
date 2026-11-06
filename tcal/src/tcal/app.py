@@ -56,6 +56,9 @@ DUE_SHORTCUTS: dict[str, str] = {
     "9": "mod due:2w",
 }
 
+# Keep the undo confirmation dialog on screen for large multi-task undos.
+_UNDO_PREVIEW_LINES = 25
+
 HELP_TEXT = """\
 Navigation
 ──────────────────────────────────────────
@@ -71,6 +74,7 @@ Task actions
   e            Delete (with confirmation)
   i            Show task info
   Enter / m    Modify (opens command input)
+  u            Undo the last Taskwarrior change (with confirmation)
 
 Due-date shortcuts (pre-fill modify)
 ──────────────────────────────────────────
@@ -128,7 +132,8 @@ class InfoModal(ModalScreen[None]):
             if self._title:
                 yield Label(f"[bold]{self._title}[/bold]", id="info-title")
             yield Static(self._content, id="info-body")
-            yield Button("OK  [ESC]", variant="primary", id="ok")
+            # Button labels are Textual markup; "\[" keeps the key hint literal.
+            yield Button(r"OK  \[ESC]", variant="primary", id="ok")
 
     def on_button_pressed(self, _: Button.Pressed) -> None:
         self.dismiss()
@@ -147,8 +152,8 @@ class ModifyModal(ModalScreen[Optional[str]]):
         with Static(id="modify-dialog"):
             yield Label("Command to execute:")
             yield Input(value=self._initial, id="cmd-input")
-            yield Button("Run  [Enter]", variant="primary", id="run")
-            yield Button("Cancel  [ESC]", id="cancel")
+            yield Button(r"Run  \[Enter]", variant="primary", id="run")
+            yield Button(r"Cancel  \[ESC]", id="cancel")
 
     def on_mount(self) -> None:
         inp = self.query_one("#cmd-input", Input)
@@ -180,9 +185,10 @@ class ConfirmModal(ModalScreen[bool]):
 
     def compose(self) -> ComposeResult:
         with Static(id="confirm-dialog"):
-            yield Label(self._message, id="confirm-msg")
-            yield Button("Yes  [y]", variant="error", id="yes")
-            yield Button("No  [n / ESC]", id="no")
+            # Plain Text, not markup: task descriptions may contain "[...]".
+            yield Label(Text(self._message), id="confirm-msg")
+            yield Button(r"Yes  \[y]", variant="error", id="yes")
+            yield Button(r"No  \[n / ESC]", id="no")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "yes")
@@ -267,6 +273,7 @@ class TCalApp(App[None]):
         Binding("i", "show_info", "Info"),
         Binding("o", "open_note", "Note"),
         Binding("m", "modify_task", "Modify"),
+        Binding("u", "undo", "Undo"),
         Binding("enter", "modify_task", "Modify", show=False),
         # Due-date shortcuts
         Binding("0", "due_shortcut('0')", "Today", show=False),
@@ -559,6 +566,36 @@ class TCalApp(App[None]):
             return
         ids_arg = self._task_ids_arg(tasks)
         self.push_screen(ModifyModal(f"task {ids_arg} mod "), self._run_cmd_and_refresh)
+
+    def action_undo(self) -> None:
+        """Revert the most recent Taskwarrior change, after showing what it was."""
+        preview = client.undo_preview()
+        if preview is None:
+            self.notify("Nothing to undo", severity="warning")
+            return
+
+        lines: list[str] = []
+        for description, changes in preview:
+            lines.append(f"  {description}")
+            lines.extend(f"      {c}" for c in changes or ["(no visible changes)"])
+        if len(lines) > _UNDO_PREVIEW_LINES:
+            hidden = len(lines) - _UNDO_PREVIEW_LINES
+            lines = lines[:_UNDO_PREVIEW_LINES] + [f"  … ({hidden} more lines)"]
+        message = "Undo will make these changes:\n\n" + "\n".join(lines)
+
+        def _confirm(confirmed: bool) -> None:
+            if not confirmed:
+                return
+            ok, output = client.undo()
+            self._selected_ids.clear()
+            self._load_and_render()
+            if ok:
+                n = len(preview)
+                self.notify(f"Undone ({n} task{'s' if n != 1 else ''} restored)")
+            else:
+                self.push_screen(InfoModal(output or "Undo failed.", title="Undo failed"))
+
+        self.push_screen(ConfirmModal(message), _confirm)
 
     def action_direct_command(self) -> None:
         def _run(cmd: Optional[str]) -> None:

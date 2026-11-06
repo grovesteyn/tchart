@@ -83,6 +83,7 @@ tcal -f "due:week +urgent"  # filter by tag and date range
 | `e` | Delete (with confirmation) |
 | `i` | Show task info |
 | `m` / `Enter` | Modify (opens editable command) |
+| `u` | Undo the last Taskwarrior change (shows what will be reverted, then asks) |
 
 ### Due-date shortcuts
 
