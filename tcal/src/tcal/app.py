@@ -73,6 +73,7 @@ Task actions
   d            Mark done
   e            Delete (with confirmation)
   i            Show task info
+  o            Open the task's linked Obsidian note
   Enter / m    Modify (opens command input)
   u            Undo the last Taskwarrior change (with confirmation)
 
